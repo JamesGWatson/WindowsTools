@@ -32,13 +32,11 @@ namespace HashProgram
     public partial class MainWindow : Window
     {
         int BUFFER_SIZE = 1024 * 1024 * 10;
-        //long currentProgress = 0;
         BackgroundWorker timer = new BackgroundWorker() { WorkerReportsProgress = true, WorkerSupportsCancellation = true };
         bool globalPause = false;
-        //HashAlgorithm hash;
         string logHeader = "";
         string dirTo = "E:\\Destination";
-        //todo: option to save txt log with file, name + date
+        List<Dictionary<string, dynamic>> perItemSettings = new List<Dictionary<string, dynamic>>();
 
         ParallelOptions pOptions = new ParallelOptions { MaxDegreeOfParallelism = Convert.ToInt32(Math.Ceiling((Environment.ProcessorCount * 0.75) * 2.0)) };
 
@@ -85,11 +83,18 @@ namespace HashProgram
             }
         }
 
+        enum LogType
+        {
+            Display,
+            File_Small,
+            File_Full,
+            Server
+        }
 
         private void DoAsUser(string user, string filename)
         {
             SafeTokenHandle sth;
-            bool returnValue = LogonUser("Asgard", "local", "", 2, 0, out sth);
+            bool returnValue = LogonUser("Asgard", "local", "", 2, 0, out sth); //TODO: remove my computer name from here, swap for domain if impersonate option used
 
             SafeAccessTokenHandle sath = new SafeAccessTokenHandle(IntPtr.Zero);
             WindowsIdentity.RunImpersonated(sath, () => { Do(filename); });
@@ -97,17 +102,33 @@ namespace HashProgram
 
         private void Do(string filename)
         {
+            Dictionary<string, dynamic> thisItemSettings = new Dictionary<string, dynamic>()
+            {
+                {"filename", (new FileInfo(filename)).Name},
+                {"fullpath", filename},
+                //all settings for this file so different files can have different settings
+                {"hashes", new List<string>()},
+                {"destination", dirTo}, //TODO:: change to actual. Also, needs to be stored after radio buttons checked/decision tree
+                {"logtype", null}, //enum LogType
+                {"starttime", DateTime.Now},
+            };
+            perItemSettings.Append(thisItemSettings);
+
+            //TODO: better
+            if (rb_logShowOnly.IsChecked ?? false) thisItemSettings["logtype"] = LogType.Display;
+            if (rb_logSaveHash.IsChecked ?? false)  thisItemSettings["logtype"] = LogType.File_Small;
+            if (rb_logSaveLog.IsChecked ?? false) thisItemSettings["logtype"] = LogType.File_Full;
+            if (rb_logSaveServer.IsChecked ?? false) thisItemSettings["logtype"] = LogType.Server;
+
+
             //TODO: move into ListEntry
 
             //TODO: if directory, else if file
             //TODO: check if file already exists at destination
 
 
-            ParallelOptions options = new ParallelOptions();
-            options.MaxDegreeOfParallelism = 3;
             //int filecount = files.Length;
             //Parallel.For(0, filecount, options, i =>
-            //foreach (string file in files)
             foreach (string file in new string[] { filename })
             {
                 //string file = files[i];
@@ -115,7 +136,6 @@ namespace HashProgram
                 string newfile = dirTo + System.IO.Path.DirectorySeparatorChar + filenameonly;
                 long currentProgress = 0;
                 long thisRead = 0;
-                //Dictionary<string, string> firstHashValues = new Dictionary<string, string>();
                 Dictionary<string, HashAlgorithm> firstHashValues = new Dictionary<string, HashAlgorithm>();
                 Dictionary<string, HashAlgorithm> secondHashValues = new Dictionary<string, HashAlgorithm>();
                 long fileLength = 0;
@@ -136,7 +156,7 @@ namespace HashProgram
                 if (cb_hashSHA384.IsChecked ?? false) hashList.Add(SHA384.Create());
                 if (cb_hashSHA512.IsChecked ?? false) hashList.Add(SHA512.Create());
 
-                // surprisingly, this lot is run second, after the initial read and copy.
+                // this lot is run second, after the initial read and copy.
                 foreach (HashAlgorithm h in hashList)
                 {
                     string hashname = h.GetType().DeclaringType.FullName;
@@ -204,7 +224,10 @@ namespace HashProgram
                         bool match = String.Join("", row.Value.Hash) == String.Join("", firstHashValues[row.Key].Hash);  //row.Value.Hash.Equals(firstHashValues[row.Key].Hash);
                         //TODO: this will only work for the last one to complete...
                         le.labelHashes.Content = match ? "Hash match (click to copy)." : "Hashes do not match.";
-                        le.labelHashes.Tag = BytesToHexideximal(row.Value.Hash); //TODO: dictionary
+                        string hexresult = BytesToHexideximal(row.Value.Hash);
+                        le.labelHashes.Tag = hexresult; //TODO: dictionary
+
+                        bool success = WriteToLog(thisItemSettings, row.Key, hexresult);
                     }                
                 };
 
@@ -291,6 +314,37 @@ namespace HashProgram
 
                 hashAndCopy.RunWorkerAsync();
             }
+        }
+
+        private bool WriteToLog(Dictionary<string, dynamic> itemSettings, string hashname, string hashvalue)
+        {
+            //TODO: the other options
+            switch (itemSettings["logtype"] as LogType?)
+            {
+                case LogType.File_Small:
+                    File.WriteAllText(String.Format("{0}\\{1}.{2}", itemSettings["destination"], itemSettings["filename"], hashname), hashvalue);
+                    break;
+
+                case LogType.File_Full:
+                    string contents = String.Format("VeCo \"Verifying Copier\"\n"
+                        + "Version {0}\n\n"
+                        + "Started: {1}\n"
+                        + "Completed: {2}\n\n"
+                        + "User: {3}\n"
+                        + "Computer: {4}\n"
+                        + "Source: {5}\n"
+                        + "Destination: {6}\n"
+                        
+                        , 
+                        "0.1", itemSettings["starttime"], DateTime.Now, Environment.UserName, Environment.MachineName, itemSettings["fullpath"], itemSettings["destination"]);
+
+                    File.WriteAllText(String.Format("{0}\\{1}.log", itemSettings["destination"], itemSettings["filename"]), contents);
+                    break;
+
+                default:
+                    break;
+            }
+            return(true);
         }
 
         private string BytesToHexideximal(byte[] input)
