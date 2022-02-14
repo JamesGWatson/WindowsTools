@@ -1,0 +1,74 @@
+﻿<Window x:Name="Form" x:Class="HashProgram.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HashProgram"
+        mc:Ignorable="d"
+        Title="VeCo" Height="596" Width="797" AutomationProperties.Name="Test" WindowStartupLocation="CenterScreen" WindowStyle="SingleBorderWindow" Icon="/veritascopy.ico" Background="#FF26282C" HorizontalContentAlignment="Stretch" Foreground="#FF8D8D8D">
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo/>
+    </Window.TaskbarItemInfo>
+
+    <DockPanel x:Name="dock" HorizontalAlignment="Stretch" Margin="30,30,30,30" VerticalAlignment="Stretch" >
+        <GroupBox Header="Configuration" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Width="265" DockPanel.Dock="Right" BorderThickness="1,1,1,1" Margin="8,0,0,0" BorderBrush="#FF131617" ScrollViewer.CanContentScroll="True">
+            <ScrollViewer HorizontalContentAlignment="Left" CanContentScroll="True" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="panel_configHolder" ScrollViewer.CanContentScroll="True" CanVerticallyScroll="True" Width="228">
+                    <CheckBox x:Name="cb_copyOnDrop" Content="Start copy immediately on drop" IsChecked="True" Foreground="#FF8D8D8D" Margin="0,10,0,0"/>
+                    <GroupBox x:Name="gb_hashOptions" Header="Hashing" Height="110" Padding="0,10,0,0" Margin="0,10,0,0">
+                        <StackPanel x:Name="sp_HashSelection" Height="76" VerticalAlignment="Top">
+                            <CheckBox x:Name="cb_hashMD5" Content="MD5" IsChecked="True" Foreground="#FF8D8D8D"/>
+                            <CheckBox x:Name="cb_hashSHA1" Content="SHA1" Foreground="#FF8D8D8D"/>
+                            <CheckBox x:Name="cb_hashSHA256" Content="SHA-256" Foreground="#FF8D8D8D"/>
+                            <CheckBox x:Name="cb_hashSHA384" Content="SHA-384" Foreground="#FF8D8D8D"/>
+                            <CheckBox x:Name="cb_hashSHA512" Content="SHA-512" Foreground="#FF8D8D8D"/>
+                        </StackPanel>
+                    </GroupBox>
+                    <GroupBox x:Name="gb_destination" Header="Destination" Height="145" Margin="0,15,0,0">
+                        <StackPanel x:Name="sp_Destination">
+                            <RadioButton x:Name="rb_destinationDefault" Content="Use default" Margin="0,6,0,0" IsChecked="True" Foreground="#FF8D8D8D"/>
+                            <TextBlock Text="TextBlock" TextWrapping="Wrap" Height="15" Width="205" HorizontalAlignment="Left"/>
+                            <RadioButton x:Name="rb_destinationTree" Content="Use Decision Tree" Margin="0,10,0,0" Foreground="#FF8D8D8D"/>
+                            <Grid Height="17">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Language="en-gb" MaxWidth="30" Width="Auto" MinWidth="172"/>
+                                    <ColumnDefinition Width="Auto" MinWidth="46.623"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock HorizontalAlignment="Left" Text="No tree selected" TextWrapping="Wrap" VerticalAlignment="Center" Height="15" Width="162"/>
+                                <Button Content="Button" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="16" Width="40"/>
+                            </Grid>
+                            <RadioButton x:Name="rb_destinationOneOff" Content="Use default" Margin="0,6,0,0" Foreground="#FF8D8D8D"/>
+                            <Grid Height="17">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Language="en-gb" MaxWidth="30" Width="Auto" MinWidth="172"/>
+                                    <ColumnDefinition Width="Auto" MinWidth="46.623"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock HorizontalAlignment="Left" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Center" Height="15" Width="162"/>
+                                <Button Content="Button" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="16" Width="40"/>
+                            </Grid>
+                        </StackPanel>
+                    </GroupBox>
+                    <CheckBox x:Name="cb_logHashes" Content="Log hashes" IsChecked="True" Margin="0,20,0,0" Foreground="#FF8D8D8D"/>
+                    <GroupBox x:Name="gb_logOptions" Header="Logging" Height="111" VerticalContentAlignment="Top">
+                        <StackPanel Margin="0,7,0,0">
+                            <RadioButton x:Name="rb_logShowOnly" Content="Display only" IsChecked="True" Foreground="#FF8D8D8D" HorizontalContentAlignment="Left" Height="19" Width="216" GroupName="logs"/>
+                            <RadioButton x:Name="rb_logSaveHash" Content="Hash result in destination" Foreground="#FF8D8D8D" HorizontalContentAlignment="Left" Height="19" Width="216" GroupName="logs"/>
+                            <RadioButton x:Name="rb_logSaveLog" Content="Log file in destination" Foreground="#FF8D8D8D" HorizontalContentAlignment="Left" Height="19" Width="216" GroupName="logs"/>
+                            <Grid Height="19">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Language="en-gb" MaxWidth="30" Width="Auto" MinWidth="153"/>
+                                    <ColumnDefinition Width="Auto" MinWidth="65.623"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Content="Config" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="24" Width="66"/>
+                                <RadioButton x:Name="rb_logSaveServer" Content="Log to server" Foreground="#FF8D8D8D" HorizontalContentAlignment="Left" Margin="0,0,0,-5" HorizontalAlignment="Left" Width="121" GroupName="logs" BorderThickness="1,1,1,1"/>
+                            </Grid>
+                        </StackPanel>
+                    </GroupBox>
+                </StackPanel>
+            </ScrollViewer>
+        </GroupBox>
+        <ScrollViewer HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+            <WrapPanel x:Name="wrapPanel1" Margin="0,0,0,0" ScrollViewer.CanContentScroll="True" Background="#FF343434" AllowDrop="True" DragEnter="wrapPanel1_DragEnter" Drop="wrapPanel1_Drop"/>
+        </ScrollViewer>
+    </DockPanel>
+</Window>
